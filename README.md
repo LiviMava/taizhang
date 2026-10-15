@@ -106,6 +106,8 @@ python scripts/local_postgres.py stop
 
 ## 数据与一致性
 
+完整手工建表脚本：[sql/systemlog_postgresql.sql](sql/systemlog_postgresql.sql)。可在DBeaver连接空库后执行整个脚本，包含8张业务表、2张初始化记录表及全部索引和外键；已运行的数据库无需重复执行。该脚本已登记迁移版本，可与Spring Boot自动初始化兼容。
+
 | 演示数据 | 数量 |
 | --- | ---: |
 | TC系统 | 4，含1条禁用 |
