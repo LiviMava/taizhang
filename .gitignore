@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+.pytest_cache/
+pytest-cache-files-*/
+.env
+*.log
+*.pid
+.local/
+target/
+.idea/
+*.iml

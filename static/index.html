@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>系统集成台账</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/styles.css?v=1">
+  <script src="/assets/app.js?v=1" defer></script>
+</head>
+<body>
+  <svg class="icon-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="icon-ledger" viewBox="0 0 24 24"><rect x="5" y="3" width="15" height="18" rx="2"/><path d="M9 7h7M9 11h7M9 15h4M3 7h4M3 12h4M3 17h4"/></symbol>
+    <symbol id="icon-system" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M7 8h5M7 12h9"/></symbol>
+    <symbol id="icon-division" viewBox="0 0 24 24"><path d="M5 21V3h14v18M2 21h20M9 7h1m4 0h1M9 11h1m4 0h1M9 15h1m4 0h1M10 21v-3h4v3"/></symbol>
+    <symbol id="icon-link" viewBox="0 0 24 24"><path d="m10 13 4-4m-6 6-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m2 3 1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0" transform="translate(1 1)"/></symbol>
+  </svg>
+  <aside class="sidebar">
+    <a class="brand" href="#ledgers" aria-label="系统集成台账首页"><span class="brand-mark"><i></i><i></i><i></i><i></i></span><span class="brand-text">系统集成台账<small>INTEGRATION LEDGER</small></span></a>
+    <div class="nav-heading">业务管理</div>
+    <nav aria-label="业务管理"><a href="#ledgers" data-nav="ledgers" class="nav-link" aria-label="系统集成台账" title="系统集成台账"><svg><use href="#icon-ledger"/></svg><span>系统集成台账</span></a></nav>
+    <div class="nav-heading">基础数据管理</div>
+    <nav aria-label="基础数据管理">
+      <a href="#tc-systems" data-nav="tc-systems" class="nav-link" aria-label="TC系统维护" title="TC系统维护"><svg><use href="#icon-system"/></svg><span>TC系统维护</span></a>
+      <a href="#divisions" data-nav="divisions" class="nav-link" aria-label="事业部管理" title="事业部管理"><svg><use href="#icon-division"/></svg><span>事业部管理</span></a>
+      <a href="#partner-systems" data-nav="partner-systems" class="nav-link" aria-label="集成方系统管理" title="集成方系统管理"><svg><use href="#icon-link"/></svg><span>集成方系统管理</span></a>
+    </nav>
+    <div class="sidebar-footer"><span class="connection-dot" id="connection-dot"></span><span id="connection-label">连接服务中…</span></div>
+  </aside>
+
+  <main class="main">
+    <header class="page-header">
+      <div><div id="breadcrumb" class="eyebrow">业务管理 / 台账</div><h1 id="page-title">系统集成台账</h1><p id="page-description">统一维护系统之间的集成关系与接口信息</p></div>
+      <a class="documentation-link" href="/docs" target="_blank" rel="noopener">接口文档 ↗</a>
+    </header>
+    <section class="panel filters-panel" aria-label="查询条件"><form id="filter-form"><div id="filters" class="filters-grid"></div><div class="filter-actions"><button type="reset" class="button secondary">重置</button><button type="submit" class="button primary">查询</button></div></form></section>
+    <section class="panel records-panel" aria-label="数据列表">
+      <div class="table-toolbar"><div><h2 id="list-title">台账列表</h2><span id="record-count" class="muted">正在读取数据</span></div><div class="toolbar-actions"><button id="reload-button" class="button secondary" type="button">刷新</button><button id="export-button" class="button secondary" type="button">导出 CSV</button><button id="add-button" class="button primary" type="button">＋ 新增台账</button></div></div>
+      <div id="page-error" class="error-box" role="alert" hidden></div>
+      <div class="table-scroll" id="table-scroll"><table id="data-table"><thead id="table-head"></thead><tbody id="table-body"></tbody></table></div>
+      <footer class="pagination"><div id="page-summary" class="muted"></div><div class="pagination-controls"><label for="page-size">每页</label><select id="page-size" aria-label="每页条数"><option value="20">20 条</option><option value="50">50 条</option><option value="100">100 条</option></select><button type="button" id="previous-page" class="button secondary">上一页</button><span id="page-number">1 / 1</span><button type="button" id="next-page" class="button secondary">下一页</button></div></footer>
+    </section>
+    <p class="page-footnote">系统集成台账 · 基础数据与集成关系管理</p>
+  </main>
+
+  <dialog id="editor-dialog" class="dialog editor-dialog" aria-labelledby="editor-title">
+    <form id="editor-form">
+      <header class="dialog-header"><div><span class="eyebrow" id="editor-eyebrow">系统集成台账</span><h2 id="editor-title">新增台账</h2></div><button type="button" class="close-button" data-close="editor-dialog" aria-label="关闭编辑窗口">×</button></header>
+      <div class="dialog-body"><div id="editor-error" class="error-box" role="alert" hidden></div><button type="button" id="reload-editor" class="button secondary" hidden>重新载入最新数据</button><div id="editor-fields"></div></div>
+      <footer class="dialog-footer"><span class="muted">带 <span class="required">*</span> 的字段为必填项</span><div><button type="button" class="button secondary" data-close="editor-dialog">取消</button><button type="submit" id="save-button" class="button primary">保存</button></div></footer>
+    </form>
+  </dialog>
+
+  <dialog id="detail-dialog" class="dialog detail-dialog" aria-labelledby="detail-title"><header class="dialog-header"><div><span class="eyebrow">系统集成台账</span><h2 id="detail-title">台账详情</h2></div><button type="button" class="close-button" data-close="detail-dialog" aria-label="关闭详情窗口">×</button></header><div class="dialog-body" id="detail-content"></div><footer class="dialog-footer"><span id="detail-audit" class="muted"></span><button type="button" class="button secondary" data-close="detail-dialog">关闭</button></footer></dialog>
+
+  <dialog id="confirm-dialog" class="dialog confirm-dialog" aria-labelledby="confirm-title"><div class="confirm-content"><span class="warning-mark" aria-hidden="true">!</span><h2 id="confirm-title">确认删除</h2><p id="confirm-message"></p><div id="confirm-error" class="error-box" role="alert" hidden></div></div><footer class="dialog-footer"><button type="button" class="button secondary" data-close="confirm-dialog">取消</button><button type="button" id="confirm-delete" class="button danger">确定删除</button></footer></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

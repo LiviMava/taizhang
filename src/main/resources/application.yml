@@ -1,0 +1,26 @@
+server:
+  address: ${APP_HOST:127.0.0.1}
+  port: ${APP_PORT:8000}
+  error:
+    include-message: never
+spring:
+  application:
+    name: systemlog
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    time-zone: Asia/Shanghai
+    deserialization:
+      fail-on-unknown-properties: true
+  datasource:
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 5000
+      connection-init-sql: SET TIME ZONE 'Asia/Shanghai'
+springdoc:
+  swagger-ui:
+    path: /docs
+  api-docs:
+    path: /openapi.json
+ledger:
+  auto-migrate: ${AUTO_MIGRATE:true}
+  seed-demo: ${SEED_DEMO:true}

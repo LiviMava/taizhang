@@ -1,0 +1,3611 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统集成台账管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Microsoft YaHei", "Segoe UI", Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+        }
+        /* 左侧导航 */
+        .sidebar {
+            width: 240px;
+            background: linear-gradient(180deg, #1a3a5c 0%, #0d2137 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-header {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-header h1 {
+            font-size: 18px;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        .sidebar-header .subtitle {
+            font-size: 12px;
+            color: #7eb8e7;
+        }
+        .nav-menu {
+            padding: 15px 0;
+            flex: 1;
+        }
+        .nav-section-title {
+            padding: 13px 25px;
+            color: #a0c4e8;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-left: 3px solid transparent;
+            margin: 2px 0;
+            transition: all 0.3s;
+        }
+        .nav-section-title:hover {
+            background: rgba(61,122,181,0.4);
+            color: #fff;
+            border-left-color: #5da0d8;
+        }
+        .nav-section-title.active {
+            background: rgba(61,122,181,0.5);
+            color: #fff;
+            border-left-color: #3d7ab5;
+            font-weight: 600;
+        }
+        .nav-section-title .arrow {
+            font-size: 10px;
+            transition: transform 0.3s;
+        }
+        .nav-section-title.collapsed .arrow {
+            transform: rotate(-90deg);
+        }
+        .nav-group {
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .nav-group.collapsed {
+            max-height: 0 !important;
+        }
+        .nav-item {
+            padding: 13px 25px;
+            color: #a0c4e8;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            border-left: 3px solid transparent;
+            margin: 2px 0;
+            font-weight: 600;
+        }
+        .nav-group .nav-item {
+            padding-left: 45px;
+            font-size: 14px;
+            font-weight: normal;
+        }
+        .nav-item:hover {
+            background: rgba(61,122,181,0.4);
+            color: #fff;
+            border-left-color: #5da0d8;
+        }
+        .nav-item.active {
+            background: rgba(61,122,181,0.5);
+            color: #fff;
+            border-left-color: #3d7ab5;
+            font-weight: 600;
+        }
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #3d7ab5;
+        }
+        .nav-item .icon {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            padding: 20px 25px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+            min-height: 100vh;
+        }
+        .page-header {
+            background: linear-gradient(135deg, #1a3a5c 0%, #2d5a8a 100%);
+            padding: 18px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(26, 58, 92, 0.3);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .page-header .page-title {
+            color: #fff;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        /* 标签页样式 */
+        .tabs-container {
+            background: #fff;
+            border-radius: 10px;
+            padding: 15px 20px 0;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        }
+        .tabs-header {
+            display: flex;
+            gap: 5px;
+            border-bottom: 2px solid #e8ecf1;
+            margin-bottom: 15px;
+        }
+        .tab-btn {
+            padding: 10px 25px;
+            background: #f5f7fa;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+            transition: all 0.3s;
+            position: relative;
+            top: 2px;
+        }
+        .tab-btn:hover {
+            background: #e8f0f7;
+            color: #1a3a5c;
+        }
+        .tab-btn.active {
+            background: #fff;
+            color: #1a3a5c;
+            font-weight: 600;
+            border-bottom: 2px solid #3d7ab5;
+        }
+        
+        .page-title {
+            font-size: 18px;
+            color: #1a3a5c;
+            font-weight: 600;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        
+        /* 查询区域紧凑样式 */
+        .search-compact {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .search-compact .search-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .search-compact input,
+        .search-compact select {
+            padding: 6px 10px;
+            border: 1px solid #d0d9e8;
+            border-radius: 5px;
+            font-size: 13px;
+            min-width: 120px;
+            transition: border-color 0.2s;
+        }
+        .search-compact input:focus,
+        .search-compact select:focus {
+            outline: none;
+            border-color: #3d7ab5;
+            box-shadow: 0 0 0 2px rgba(61, 122, 181, 0.1);
+        }
+        .search-compact label {
+            font-size: 13px;
+            color: #555;
+            white-space: nowrap;
+        }
+        .search-compact .btn {
+            padding: 7px 18px;
+            font-size: 13px;
+        }
+        
+        /* 面板 */
+        .panel {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            border: 1px solid #e8ecf1;
+        }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e8ecf1;
+        }
+        /* 展开行样式 */
+        .main-row {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .main-row:hover {
+            background: #f0f7ff;
+        }
+        .main-row td {
+            border-bottom: none;
+        }
+        .expand-icon {
+            font-size: 12px;
+            color: #666;
+            transition: transform 0.2s;
+        }
+        .main-row.expanded .expand-icon {
+            transform: rotate(-90deg);
+        }
+        .detail-row {
+            display: none;
+        }
+        .detail-row.expanded {
+            display: table-row;
+        }
+        .detail-row td {
+            padding: 0;
+        }
+        
+        /* 数据表格样式 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .data-table th,
+        .data-table td {
+            border: 1px solid #d0d9e8;
+            padding: 10px 8px;
+            text-align: left;
+            vertical-align: middle;
+        }
+        .data-table th {
+            background: linear-gradient(135deg, #1a4a7a 0%, #2d5a8a 100%);
+            color: white;
+            font-weight: 600;
+            text-align: center;
+        }
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        .data-table tbody tr:hover {
+            background-color: #e8f4fc;
+        }
+        
+        /* 文档链接样式 */
+        .doc-link {
+            color: #1976d2;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .doc-link:hover {
+            color: #0d47a1;
+        }
+        
+        /* 操作按钮样式 */
+        .btn-action {
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            border: none;
+            margin: 2px;
+        }
+        .btn-edit {
+            background: linear-gradient(135deg, #4a9edd 0%, #2d7dc5 100%);
+            color: white;
+        }
+        .btn-edit:hover {
+            background: linear-gradient(135deg, #2d7dc5 0%, #1a5a9a 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(45, 125, 197, 0.4);
+        }
+        .btn-delete {
+            background: linear-gradient(135deg, #e57373 0%, #d32f2f 100%);
+            color: white;
+        }
+        .btn-delete:hover {
+            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(211, 47, 47, 0.4);
+        }
+        
+        .panel-title {
+            font-size: 15px;
+            color: #1a3a5c;
+            font-weight: 600;
+            padding-left: 10px;
+            border-left: 3px solid #3d7ab5;
+        }
+        /* 按钮 */
+        .btn {
+            padding: 9px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .btn-primary {
+            background: #3d7ab5;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #2d6aa5;
+            box-shadow: 0 4px 12px rgba(61,122,181,0.4);
+        }
+        .btn-success {
+            background: #28a745;
+            color: #fff;
+        }
+        .btn-success:hover {
+            background: #218838;
+            box-shadow: 0 4px 12px rgba(40,167,69,0.4);
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+        .btn-warning:hover {
+            background: #e0a800;
+            box-shadow: 0 4px 12px rgba(255,193,7,0.4);
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #3d7ab5;
+            color: #3d7ab5;
+        }
+        .btn-outline:hover {
+            background: #3d7ab5;
+            color: #fff;
+        }
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        /* 工具栏 */
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .search-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            flex: 2;
+        }
+        .search-item {
+            min-width: 140px;
+        }
+        .search-item input,
+        .search-item select {
+            width: 100%;
+            padding: 8px 12px;
+            background: #f5f7fa;
+            border: 1px solid #e8ecf1;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        /* 表格 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e8ecf1;
+        }
+        th {
+            background: #f5f7fa;
+            color: #1a3a5c;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        tr:hover {
+            background: #f9fafb;
+        }
+        .action-btns {
+            display: flex;
+            gap: 6px;
+        }
+        .action-btns button {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .action-btns .edit-btn {
+            background: #e8f4fc;
+            color: #3d7ab5;
+        }
+        .action-btns .edit-btn:hover {
+            background: #3d7ab5;
+            color: #fff;
+        }
+        .action-btns .delete-btn {
+            background: #fce8e8;
+            color: #dc3545;
+        }
+        .action-btns .delete-btn:hover {
+            background: #dc3545;
+            color: #fff;
+        }
+        .required::after {
+            content: " *";
+            color: #ff6b6b;
+        }
+        /* 弹窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: #fff;
+            border-radius: 12px;
+            padding: 25px;
+            width: 90%;
+            max-width: 1400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-title {
+            font-size: 18px;
+            color: #1a3a5c;
+            font-weight: 600;
+        }
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #f5f7fa;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            color: #666;
+        }
+        .modal-close:hover {
+            background: #e8ecf1;
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 25px;
+        }
+        /* 居中提示框 */
+        .custom-alert {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .custom-alert-content {
+            background: #fff;
+            border-radius: 12px;
+            padding: 30px 40px;
+            min-width: 400px;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .custom-alert-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+        .custom-alert-message {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        .custom-alert-btn {
+            background: linear-gradient(135deg, #4a9edd 0%, #2d7dc5 100%);
+            color: white;
+            border: none;
+            padding: 10px 40px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .custom-alert-btn:hover {
+            background: linear-gradient(135deg, #2d7dc5 0%, #1a5a9a 100%);
+            transform: translateY(-1px);
+        }
+        /* 表单 */
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #555;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background: #f5f7fa;
+            border: 1px solid #e8ecf1;
+            border-radius: 6px;
+            color: #333;
+            font-size: 14px;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3d7ab5;
+            background: #fff;
+        }
+        /* 分组表单 */
+        .form-section {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .form-section-title {
+            font-size: 14px;
+            color: #1a3a5c;
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e8ecf1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        /* 子表 */
+        .sub-table {
+            margin-top: 10px;
+        }
+        .sub-table table {
+            font-size: 12px;
+        }
+        .sub-table th, .sub-table td {
+            padding: 8px 10px;
+        }
+        .sub-table .action-col {
+            width: 100px;
+        }
+        .add-row-btn {
+            padding: 5px 12px;
+            background: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .add-row-btn:hover {
+            background: #218838;
+        }
+        .remove-row-btn {
+            padding: 4px 12px;
+            background: #fff;
+            color: #dc3545;
+            border: 1px solid #dc3545;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .remove-row-btn:hover {
+            background: #dc3545;
+            color: #fff;
+        }
+        /* 详细信息表格操作按钮样式 */
+        .detail-action-btn {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            border: none;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .detail-edit-btn {
+            background: #3d7ab5;
+            color: #fff;
+        }
+        .detail-edit-btn:hover {
+            background: #2d5a8a;
+        }
+        .detail-delete-btn {
+            background: #dc3545;
+            color: #fff;
+        }
+        .detail-delete-btn:hover {
+            background: #c82333;
+        }
+        /* 状态标签 */
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .status-enabled {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-disabled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        /* 多选样式 */
+        .multi-select {
+            min-height: 80px;
+        }
+        .multi-select option {
+            padding: 5px;
+        }
+        /* 宽输入框 */
+        .wide-input {
+            width: 100% !important;
+        }
+        /* 日志链接 */
+        .log-link {
+            color: #3d7ab5;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .log-link:hover {
+            color: #2d6aa5;
+        }
+        /* 宽字段样式 */
+        .wide-field-input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #e8ecf1;
+            border-radius: 4px;
+            font-size: 13px;
+            background: #fff;
+        }
+        .wide-field-input:focus {
+            outline: none;
+            border-color: #3d7ab5;
+        }
+        .wide-field-textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #e8ecf1;
+            border-radius: 4px;
+            font-size: 13px;
+            background: #fff;
+            resize: vertical;
+        }
+        .wide-field-textarea:focus {
+            outline: none;
+            border-color: #3d7ab5;
+        }
+        /* 日志路径输入框可点击跳转 */
+        .log-path-input {
+            cursor: pointer;
+            background: #f0f7ff;
+        }
+        .log-path-input:hover {
+            background: #e0f0ff;
+        }
+        .log-path-input.has-value {
+            color: #3d7ab5;
+            font-weight: 500;
+        }
+        /* 下拉菜单样式 */
+        .dropdown-item:hover {
+            background: #f5f7fa;
+        }
+    </style>
+</head>
+<body>
+    <!-- 左侧导航 -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1>系统集成台账</h1>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-section-title" onclick="toggleNavGroup('base-data')">
+                <span>📁 基础数据管理</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="nav-group" id="base-data">
+                <div class="nav-item" onclick="showPage('tc-system')">
+                    <span class="icon">💻</span>
+                    <span>TC系统维护</span>
+                </div>
+                <div class="nav-item" onclick="showPage('division')">
+                    <span class="icon">🏢</span>
+                    <span>事业部管理</span>
+                </div>
+                <div class="nav-item" onclick="showPage('target-system')">
+                    <span class="icon">🔗</span>
+                    <span>集成方系统管理</span>
+                </div>
+            </div>
+            <div class="nav-item active" onclick="showPage('home')">
+                <span class="icon">📋</span>
+                <span>系统集成台账</span>
+            </div>
+            <div class="nav-section-title" onclick="toggleNavGroup('other-info')">
+                <span>📁 其他关联信息</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="nav-group" id="other-info">
+                <div class="nav-item" onclick="showPage('white-list')">
+                    <span class="icon">📝</span>
+                    <span>白名单维护</span>
+                </div>
+                <div class="nav-item" onclick="showPage('log-viewer')">
+                    <span class="icon">📊</span>
+                    <span>接口日志查看</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 主内容区 -->
+    <div class="main-content">
+        <!-- 系统集成台账页面 -->
+        <div id="home" class="page active">
+            <div class="page-header">
+                <div class="page-title">系统集成台账</div>
+            </div>
+            
+            <!-- 查询区域 - 紧凑样式 -->
+            <div class="search-compact">
+                <div class="search-item">
+                    <label>TC系统名称:</label>
+                    <select id="searchTcSystem">
+                        <option value="">请选择</option>
+                    </select>
+                </div>
+                <div class="search-item">
+                    <label>事业部:</label>
+                    <select id="searchDivision">
+                        <option value="">请选择</option>
+                    </select>
+                </div>
+                <div class="search-item">
+                    <label>集成方系统名称:</label>
+                    <input type="text" id="searchSystemName" placeholder="请输入">
+                </div>
+                <div class="search-item">
+                    <label>TC负责人:</label>
+                    <input type="text" id="searchTcManager" placeholder="请输入">
+                </div>
+                <div class="search-item">
+                    <label>集成方负责人:</label>
+                    <input type="text" id="searchExtManager" placeholder="请输入">
+                </div>
+                <div class="search-item">
+                    <label>接口提供方:</label>
+                    <select id="searchProvider">
+                        <option value="">请选择</option>
+                        <option value="tc">TC提供</option>
+                        <option value="non-tc">非TC提供</option>
+                    </select>
+                </div>
+                <div class="search-item">
+                    <label>维护人:</label>
+                    <input type="text" id="searchMaintainer" placeholder="请输入">
+                </div>
+                <button class="btn btn-primary" onclick="searchAccounts()">查询</button>
+            </div>
+            
+            <!-- 标签页 -->
+            <div class="tabs-container">
+                <div class="tabs-header">
+                    <button class="tab-btn active">台账列表</button>
+                </div>
+            </div>
+            
+            <!-- 台账列表 -->
+            <div class="panel" style="overflow-x:auto;">
+                <div class="panel-header">
+                    <div class="panel-title">台账列表</div>
+                    <div style="display:flex;gap:10px;">
+                        <button class="btn btn-warning" onclick="openModal('addAccountModal')">
+                            <span>+</span> 新增台账
+                        </button>
+                        <button class="btn btn-warning" onclick="exportAccount()">
+                            <span>↓</span> 导出台账
+                        </button>
+                    </div>
+                </div>
+                <table class="data-table" style="min-width:3400px;">
+                    <thead>
+                        <tr>
+                            <th style="width:40px;">序号</th>
+                            <th style="width:100px;">TC系统名称</th>
+                            <th style="width:80px;">事业部</th>
+                            <th style="width:100px;">集成方系统名称</th>
+                            <th style="width:100px;">生产环境白名单</th>
+                            <th style="width:100px;">测试环境白名单</th>
+                            <th style="width:100px;">TC负责人</th>
+                            <th style="width:100px;">集成方负责人</th>
+                            <th style="width:130px;">集成方测试IP</th>
+                            <th style="width:130px;">集成方生产IP</th>
+                            <th style="width:100px;">系统集成状态</th>
+                            <th style="width:130px;">首选项</th>
+                            <th style="width:80px;">handle</th>
+                            <th style="width:120px;">基本信息备注</th>
+                            <th style="width:100px;">关联文档</th>
+                            <th style="width:80px;">接口提供方</th>
+                            <th style="width:120px;">接口清单名称</th>
+                            <th style="width:100px;">接口集成状态</th>
+                            <th style="width:120px;">生产nacos服务名</th>
+                            <th style="width:120px;">测试nacos服务名</th>
+                            <th style="width:250px;">测试环境接口地址</th>
+                            <th style="width:250px;">生产环境接口地址</th>
+                            <th style="width:180px;">接口报文样例</th>
+                            <th style="width:120px;">生产接口日志查看</th>
+                            <th style="width:120px;">测试接口日志查看</th>
+                            <th style="width:120px;">详细信息备注</th>
+                            <th style="width:70px;">维护人</th>
+                            <th style="width:90px;">创建日期</th>
+                            <th style="width:90px;">更新日期</th>
+                            <th style="width:100px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="accountTableBody">
+                        <!-- 基本信息1 -->
+                        <tr>
+                            <td rowspan="5">1</td>
+                            <td rowspan="5">集团TC PLM系统</td>
+                            <td rowspan="5">工程院</td>
+                            <td rowspan="5">ERP系统</td>
+                            <td rowspan="5"><button class="btn btn-outline btn-sm" onclick="showWhiteListMaintain()">查看</button></td>
+                            <td rowspan="5"><button class="btn btn-outline btn-sm" onclick="showWhiteListMaintain()">查看</button></td>
+                            <td rowspan="5">张三、李四</td>
+                            <td rowspan="5">王工</td>
+                            <td rowspan="5">192.168.1.10</td>
+                            <td rowspan="5">192.168.1.11</td>
+                            <td rowspan="5">
+                                <span style="color:#28a745;">生效</span>
+                            </td>
+                            <td rowspan="5">首选域名</td>
+                            <td rowspan="5">handle001</td>
+                            <td rowspan="5">ERP系统集成项目</td>
+                            <td rowspan="5"><button class="btn btn-outline btn-sm" onclick="viewDoc()">查看</button></td>
+                            <td style="color:#28a745;">TC提供</td>
+                            <td>用户查询接口</td>
+                            <td>
+                                <span style="color:#28a745;">生效</span>
+                            </td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showNacosConfig('prod')">查看</button></td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showNacosConfig('test')">查看</button></td>
+                            <td>http://test.erp.com/api/user</td>
+                            <td>http://prod.erp.com/api/user</td>
+                            <td>{"userId":"001","name":"张三"}</td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showLogPage('prod')">查看</button></td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showLogPage('test')">查看</button></td>
+                            <td>用户查询接口</td>
+                            <td rowspan="5">张三</td>
+                            <td rowspan="5">2024-09-01</td>
+                            <td rowspan="5">2024-09-20</td>
+                            <td rowspan="5">
+                                <button class="btn-action btn-edit" onclick="editAccount(this)">编辑</button>
+                                <button class="btn-action btn-delete" onclick="deleteAccount(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="color:#17a2b8;">非TC提供</td>
+                            <td>订单同步接口</td>
+                            <td>
+                                <span style="color:#dc3545;">作废</span>
+                            </td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showNacosConfig('prod')">查看</button></td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showNacosConfig('test')">查看</button></td>
+                            <td>http://test.erp.com/api/order</td>
+                            <td>http://prod.erp.com/api/order</td>
+                            <td>{"orderId":"1001","amount":1000}</td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showLogPage('prod')">查看</button></td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showLogPage('test')">查看</button></td>
+                            <td>订单同步接口</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#28a745;">TC提供</td>
+                            <td>物料查询接口</td>
+                            <td>
+                                <span style="color:#28a745;">生效</span>
+                            </td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showNacosConfig('prod')">查看</button></td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showNacosConfig('test')">查看</button></td>
+                            <td>http://test.erp.com/api/material</td>
+                            <td>http://prod.erp.com/api/material</td>
+                            <td>{"materialId":"M001","name":"螺丝"}</td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showLogPage('prod')">查看</button></td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showLogPage('test')">查看</button></td>
+                            <td>物料查询接口</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#17a2b8;">非TC提供</td>
+                            <td>库存同步接口</td>
+                            <td>
+                                <span style="color:#dc3545;">作废</span>
+                            </td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showNacosConfig('prod')">查看</button></td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showNacosConfig('test')">查看</button></td>
+                            <td>http://test.erp.com/api/stock</td>
+                            <td>http://prod.erp.com/api/stock</td>
+                            <td>{"stockId":"S001","qty":100}</td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showLogPage('prod')">查看</button></td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showLogPage('test')">查看</button></td>
+                            <td>库存同步接口</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#28a745;">TC提供</td>
+                            <td>BOM查询接口</td>
+                            <td>
+                                <span style="color:#28a745;">生效</span>
+                            </td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showNacosConfig('prod')">查看</button></td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showNacosConfig('test')">查看</button></td>
+                            <td>http://test.erp.com/api/bom</td>
+                            <td>http://prod.erp.com/api/bom</td>
+                            <td>{"bomId":"B001","level":3}</td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showLogPage('prod')">查看</button></td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showLogPage('test')">查看</button></td>
+                            <td>BOM查询接口</td>
+                        </tr>
+                        
+                        <!-- 基本信息2 -->
+                        <tr>
+                            <td rowspan="5">2</td>
+                            <td rowspan="5">电池事业群TC12系统</td>
+                            <td rowspan="5">第二事业部</td>
+                            <td rowspan="5">MES系统</td>
+                            <td rowspan="5"><button class="btn btn-outline btn-sm" onclick="showWhiteListMaintain()">查看</button></td>
+                            <td rowspan="5"><button class="btn btn-outline btn-sm" onclick="showWhiteListMaintain()">查看</button></td>
+                            <td rowspan="5">李工</td>
+                            <td rowspan="5">赵工、周工</td>
+                            <td rowspan="5">192.168.2.10</td>
+                            <td rowspan="5">192.168.2.11</td>
+                            <td rowspan="5">
+                                <span style="color:#dc3545;">作废</span>
+                            </td>
+                            <td rowspan="5">备用域名</td>
+                            <td rowspan="5">handle002</td>
+                            <td rowspan="5">MES系统集成</td>
+                            <td rowspan="5"><button class="btn btn-outline btn-sm" onclick="viewDoc()">查看</button></td>
+                            <td style="color:#28a745;">TC提供</td>
+                            <td>工单查询接口</td>
+                            <td>
+                                <span style="color:#28a745;">生效</span>
+                            </td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showNacosConfig('prod')">查看</button></td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showNacosConfig('test')">查看</button></td>
+                            <td>http://test.mes.com/api/workorder</td>
+                            <td>http://prod.mes.com/api/workorder</td>
+                            <td>{"woId":"WO001","status":"pending"}</td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showLogPage('prod')">查看</button></td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showLogPage('test')">查看</button></td>
+                            <td>工单查询接口</td>
+                            <td rowspan="5">李工</td>
+                            <td rowspan="5">2024-08-15</td>
+                            <td rowspan="5">2024-09-18</td>
+                            <td rowspan="5">
+                                <button class="btn-action btn-edit" onclick="editAccount(this)">编辑</button>
+                                <button class="btn-action btn-delete" onclick="deleteAccount(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="color:#17a2b8;">非TC提供</td>
+                            <td>工艺路线接口</td>
+                            <td>
+                                <span style="color:#dc3545;">作废</span>
+                            </td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showNacosConfig('prod')">查看</button></td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showNacosConfig('test')">查看</button></td>
+                            <td>http://test.mes.com/api/process</td>
+                            <td>http://prod.mes.com/api/process</td>
+                            <td>{"processId":"P001","name":"组装"}</td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showLogPage('prod')">查看</button></td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showLogPage('test')">查看</button></td>
+                            <td>工艺路线接口</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#28a745;">TC提供</td>
+                            <td>工序采集接口</td>
+                            <td>
+                                <span style="color:#28a745;">生效</span>
+                            </td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showNacosConfig('prod')">查看</button></td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showNacosConfig('test')">查看</button></td>
+                            <td>http://test.mes.com/api/collection</td>
+                            <td>http://prod.mes.com/api/collection</td>
+                            <td>{"stepId":"ST001","qty":50}</td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showLogPage('prod')">查看</button></td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showLogPage('test')">查看</button></td>
+                            <td>工序采集接口</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#17a2b8;">非TC提供</td>
+                            <td>质检上报接口</td>
+                            <td>
+                                <span style="color:#dc3545;">作废</span>
+                            </td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showNacosConfig('prod')">查看</button></td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showNacosConfig('test')">查看</button></td>
+                            <td>http://test.mes.com/api/quality</td>
+                            <td>http://prod.mes.com/api/quality</td>
+                            <td>{"qcId":"QC001","result":"OK"}</td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showLogPage('prod')">查看</button></td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showLogPage('test')">查看</button></td>
+                            <td>质检上报接口</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#28a745;">TC提供</td>
+                            <td>设备联控接口</td>
+                            <td>
+                                <span style="color:#28a745;">生效</span>
+                            </td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showNacosConfig('prod')">查看</button></td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showNacosConfig('test')">查看</button></td>
+                            <td>http://test.mes.com/api/device</td>
+                            <td>http://prod.mes.com/api/device</td>
+                            <td>{"deviceId":"D001","status":"running"}</td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showLogPage('prod')">查看</button></td>
+                            <td><button class="btn btn-outline btn-sm" onclick="showLogPage('test')">查看</button></td>
+                            <td>设备联控接口</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- 白名单维护页面 -->
+        <div id="white-list" class="page">
+            <div class="page-header">
+                <div class="page-title">白名单维护</div>
+                <button class="btn btn-success" onclick="openModal('whiteListModal')">
+                    <span>+</span> 新增白名单
+                </button>
+            </div>
+            
+            <!-- 查询区域 - 紧凑样式 -->
+            <div class="search-compact">
+                <div class="search-item">
+                    <label>白名单名称:</label>
+                    <input type="text" id="searchWhiteListName" placeholder="请输入">
+                </div>
+                <div class="search-item">
+                    <label>白名单值:</label>
+                    <input type="text" id="searchWhiteListValue" placeholder="请输入">
+                </div>
+                <button class="btn btn-primary" onclick="searchWhiteList()">查询</button>
+            </div>
+            
+            <!-- 标签页 -->
+            <div class="tabs-container">
+                <div class="tabs-header">
+                    <button class="tab-btn active">白名单列表</button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>白名单名称</th>
+                            <th>白名单值</th>
+                            <th>创建时间</th>
+                            <th>更新时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="whiteListTableBody">
+                        <tr>
+                            <td>1</td>
+                            <td>ERP系统白名单</td>
+                            <td>192.168.1.100,192.168.1.101</td>
+                            <td>2024-01-10 10:00</td>
+                            <td>2024-09-22 10:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>MES系统白名单</td>
+                            <td>192.168.2.100,192.168.2.101</td>
+                            <td>2024-01-12 11:00</td>
+                            <td>2024-09-21 15:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>PLM系统白名单</td>
+                            <td>192.168.3.100</td>
+                            <td>2024-01-15 09:00</td>
+                            <td>2024-09-20 14:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- 集成方系统名称页面 -->
+        <div id="target-system" class="page">
+            <div class="page-header">
+                <div class="page-title">集成方系统管理</div>
+                <button class="btn btn-success" onclick="openModal('addTargetSystemModal')">
+                    <span>+</span> 新增集成方系统
+                </button>
+            </div>
+            
+            <!-- 查询区域 - 紧凑样式 -->
+            <div class="search-compact">
+                <div class="search-item">
+                    <label>集成方系统名称:</label>
+                    <input type="text" id="searchTargetSystemName" placeholder="请输入">
+                </div>
+                <div class="search-item">
+                    <label>维护人:</label>
+                    <input type="text" id="searchTargetSystemOwner" placeholder="请输入">
+                </div>
+                <div class="search-item">
+                    <label>状态:</label>
+                    <select id="searchTargetSystemStatus">
+                        <option value="">请选择</option>
+                        <option value="active">生效</option>
+                        <option value="invalid">作废</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="searchTargetSystem()">查询</button>
+            </div>
+            
+            <!-- 标签页 -->
+            <div class="tabs-container">
+                <div class="tabs-header">
+                    <button class="tab-btn active">对接系统列表</button>
+                </div>
+            </div>
+            
+            <!-- 对接系统列表 -->
+            <div class="panel">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>集成方系统名称</th>
+                            <th>维护人</th>
+                            <th>状态</th>
+                            <th>创建时间</th>
+                            <th>更新时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="targetSystemTableBody">
+                        <tr>
+                            <td>1</td>
+                            <td>ALM</td>
+                            <td>张三</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-01-10 10:00</td>
+                            <td>2024-10-14 09:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>BOM（发布空间集成）</td>
+                            <td>李四</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-02-15 14:20</td>
+                            <td>2024-10-13 16:45</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>BOM（工程院+新技术院）</td>
+                            <td>王五</td>
+                            <td><span style="color:#dc3545;">作废</span></td>
+                            <td>2024-03-20 09:00</td>
+                            <td>2024-10-12 11:20</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>BOM（十一部焊装）</td>
+                            <td>赵六</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-04-18 10:30</td>
+                            <td>2024-10-11 08:15</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>BOM（十一部饰件）</td>
+                            <td>钱七</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-05-25 11:00</td>
+                            <td>2024-10-10 14:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>BOM（十一部总装数字化工艺）</td>
+                            <td>孙八</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-06-01 09:00</td>
+                            <td>2024-10-09 10:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td>BOM系统（卡车）</td>
+                            <td>周九</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-06-15 14:00</td>
+                            <td>2024-10-08 16:20</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>8</td>
+                            <td>BOM系统（客车）</td>
+                            <td>吴十</td>
+                            <td><span style="color:#dc3545;">作废</span></td>
+                            <td>2024-07-01 10:00</td>
+                            <td>2024-10-07 09:45</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>9</td>
+                            <td>BOM系统（商研院）（商研院整车结构查询接口）</td>
+                            <td>郑一</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-07-20 11:30</td>
+                            <td>2024-10-06 14:15</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>10</td>
+                            <td>DMS（工程院）</td>
+                            <td>王二</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-08-05 09:00</td>
+                            <td>2024-10-05 11:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>11</td>
+                            <td>DMS（商研院）</td>
+                            <td>冯三</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-08-10 15:00</td>
+                            <td>2024-10-04 08:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>12</td>
+                            <td>DMS（十一部）</td>
+                            <td>陈四</td>
+                            <td><span style="color:#dc3545;">作废</span></td>
+                            <td>2024-08-15 10:00</td>
+                            <td>2024-10-03 16:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>13</td>
+                            <td>DMS（新技术院）</td>
+                            <td>褚五</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-08-20 14:30</td>
+                            <td>2024-10-02 10:45</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>14</td>
+                            <td>DMS（新技术院智能文档中台）</td>
+                            <td>卫六</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-08-25 09:00</td>
+                            <td>2024-10-01 15:20</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>15</td>
+                            <td>DMS历史数据（工程院）</td>
+                            <td>蒋七</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-09-01 11:00</td>
+                            <td>2024-09-30 09:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>16</td>
+                            <td>ECM（多事业部）</td>
+                            <td>沈八</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-09-05 10:00</td>
+                            <td>2024-09-29 14:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>17</td>
+                            <td>ECM（十一部图纸）</td>
+                            <td>韩九</td>
+                            <td><span style="color:#dc3545;">作废</span></td>
+                            <td>2024-09-10 09:30</td>
+                            <td>2024-09-28 11:15</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>18</td>
+                            <td>EPLM（新技术院）</td>
+                            <td>杨十</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-09-15 14:00</td>
+                            <td>2024-09-27 08:45</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>19</td>
+                            <td>FMEA</td>
+                            <td>朱一</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-09-18 11:00</td>
+                            <td>2024-09-26 16:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>20</td>
+                            <td>IAM</td>
+                            <td>秦二</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-09-20 09:00</td>
+                            <td>2024-09-25 10:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>21</td>
+                            <td>MDM</td>
+                            <td>尤三</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-09-22 15:00</td>
+                            <td>2024-09-24 14:15</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>22</td>
+                            <td>MDM（新技术院）</td>
+                            <td>许四</td>
+                            <td><span style="color:#dc3545;">作废</span></td>
+                            <td>2024-09-25 10:30</td>
+                            <td>2024-09-23 09:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>23</td>
+                            <td>MES（二十一部）</td>
+                            <td>何五</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-09-27 14:00</td>
+                            <td>2024-09-22 11:45</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>24</td>
+                            <td>MES（商研院）</td>
+                            <td>吕六</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-09-28 09:00</td>
+                            <td>2024-09-21 15:20</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>25</td>
+                            <td>MES（十一部冲涂焊）</td>
+                            <td>施七</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-09-29 11:00</td>
+                            <td>2024-09-20 10:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>26</td>
+                            <td>MES（十一部零部件国内）</td>
+                            <td>张八</td>
+                            <td><span style="color:#dc3545;">作废</span></td>
+                            <td>2024-09-30 15:30</td>
+                            <td>2024-09-19 08:15</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>27</td>
+                            <td>MES（十一部零部件泰国）</td>
+                            <td>孔九</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-01 10:00</td>
+                            <td>2024-09-18 14:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>28</td>
+                            <td>MES（十一部零部件印尼）</td>
+                            <td>曹十</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-02 09:30</td>
+                            <td>2024-09-17 11:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>29</td>
+                            <td>MES（十一部总装）</td>
+                            <td>严一</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-03 14:00</td>
+                            <td>2024-09-16 09:45</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>30</td>
+                            <td>MPM（新技术院）</td>
+                            <td>华二</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-04 11:00</td>
+                            <td>2024-09-15 16:20</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>31</td>
+                            <td>NCT（新技术院自研仿真管理平台）</td>
+                            <td>金三</td>
+                            <td><span style="color:#dc3545;">作废</span></td>
+                            <td>2024-10-05 09:00</td>
+                            <td>2024-09-14 10:15</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>32</td>
+                            <td>OA（集团）</td>
+                            <td>魏四</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-06 15:30</td>
+                            <td>2024-09-13 08:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>33</td>
+                            <td>OA（商研院）&BOM多站点同步数据</td>
+                            <td>蒋五</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-07 10:00</td>
+                            <td>2024-09-12 14:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>34</td>
+                            <td>OA（新技术院）</td>
+                            <td>沈六</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-08 11:30</td>
+                            <td>2024-09-11 09:15</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>35</td>
+                            <td>PDQ</td>
+                            <td>韩七</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-09 09:00</td>
+                            <td>2024-09-10 11:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>36</td>
+                            <td>PFEP（十一部）</td>
+                            <td>杨八</td>
+                            <td><span style="color:#dc3545;">作废</span></td>
+                            <td>2024-10-10 14:00</td>
+                            <td>2024-09-09 16:45</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>37</td>
+                            <td>PMS（二十一部）</td>
+                            <td>朱九</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-11 10:30</td>
+                            <td>2024-09-08 08:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>38</td>
+                            <td>PMS（基础院）</td>
+                            <td>秦十</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-12 15:00</td>
+                            <td>2024-09-07 14:20</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>39</td>
+                            <td>PMS（集团）</td>
+                            <td>尤一</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-13 09:30</td>
+                            <td>2024-09-06 10:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>40</td>
+                            <td>PMS（十一部）</td>
+                            <td>许二</td>
+                            <td><span style="color:#dc3545;">作废</span></td>
+                            <td>2024-10-14 11:00</td>
+                            <td>2024-09-05 15:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>41</td>
+                            <td>PMS系统（商研院）</td>
+                            <td>何三</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-15 14:30</td>
+                            <td>2024-09-04 09:15</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>42</td>
+                            <td>QMS（十一部）</td>
+                            <td>吕四</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-16 10:00</td>
+                            <td>2024-09-03 11:45</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>43</td>
+                            <td>SAP（二十一部）</td>
+                            <td>施五</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+
+<td>2024-10-17 09:00</td>
+                            <td>2024-09-02 08:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>44</td>
+                            <td>SAP（十一部零部件国内）</td>
+                            <td>张六</td>
+                            <td><span style="color:#dc3545;">作废</span></td>
+                            <td>2024-10-18 15:00</td>
+                            <td>2024-09-01 14:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>45</td>
+                            <td>SAP（十一部零部件泰国）</td>
+                            <td>孔七</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-19 10:30</td>
+                            <td>2024-08-31 10:15</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>46</td>
+                            <td>SAP（十一部零部件印尼）</td>
+                            <td>曹八</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-20 11:00</td>
+                            <td>2024-08-30 16:45</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>47</td>
+                            <td>SAP（新技术院）（十一后）</td>
+                            <td>严九</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-21 09:30</td>
+                            <td>2024-08-29 09:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>48</td>
+                            <td>SDM（工程院仿真平台）</td>
+                            <td>华十</td>
+                            <td><span style="color:#dc3545;">作废</span></td>
+                            <td>2024-10-22 14:00</td>
+                            <td>2024-08-28 11:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>49</td>
+                            <td>SDM（商研院仿真平台）</td>
+                            <td>金一</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-23 10:00</td>
+                            <td>2024-08-27 08:15</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>50</td>
+                            <td>SRM</td>
+                            <td>魏二</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-24 15:30</td>
+                            <td>2024-08-26 14:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>51</td>
+                            <td>UDP（新技术院）</td>
+                            <td>蒋三</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-25 09:00</td>
+                            <td>2024-08-25 10:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>52</td>
+                            <td>VMP（十一部）</td>
+                            <td>沈四</td>
+                            <td><span style="color:#dc3545;">作废</span></td>
+                            <td>2024-10-26 11:00</td>
+                            <td>2024-08-24 09:45</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>53</td>
+                            <td>WMS</td>
+                            <td>韩五</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-27 14:30</td>
+                            <td>2024-08-23 16:20</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>54</td>
+                            <td>标准化工时（工程院）</td>
+                            <td>杨六</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-28 10:00</td>
+                            <td>2024-08-22 08:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>55</td>
+                            <td>标准化工时（十一部）</td>
+                            <td>朱七</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-29 09:30</td>
+                            <td>2024-08-21 14:15</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>56</td>
+                            <td>车身设计评审平台</td>
+                            <td>秦八</td>
+                            <td><span style="color:#dc3545;">作废</span></td>
+                            <td>2024-10-30 15:00</td>
+                            <td>2024-08-20 10:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>57</td>
+                            <td>迪墨云文档中台集成（TC13）</td>
+                            <td>尤九</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-10-31 11:30</td>
+                            <td>2024-08-19 09:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>58</td>
+                            <td>迪墨云文件集成</td>
+                            <td>许十</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-11-01 10:00</td>
+                            <td>2024-08-18 15:45</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>59</td>
+                            <td>订单变更检查表系统</td>
+                            <td>何一</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-11-02 14:00</td>
+                            <td>2024-08-17 08:15</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>60</td>
+                            <td>飞书（新技术院）（十一后）</td>
+                            <td>吕二</td>
+                            <td><span style="color:#dc3545;">作废</span></td>
+                            <td>2024-11-03 09:30</td>
+                            <td>2024-08-16 11:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>61</td>
+                            <td>工程院变更2.0</td>
+                            <td>施三</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-11-04 11:00</td>
+                            <td>2024-08-15 16:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>62</td>
+                            <td>看板系统</td>
+                            <td>张四</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-11-05 15:00</td>
+                            <td>2024-08-14 10:45</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>63</td>
+                            <td>品质问题管理平台</td>
+                            <td>孔五</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-11-06 10:30</td>
+                            <td>2024-08-13 09:20</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>64</td>
+                            <td>商研院数据湖</td>
+                            <td>曹六</td>
+                            <td><span style="color:#dc3545;">作废</span></td>
+                            <td>2024-11-07 09:00</td>
+                            <td>2024-08-12 14:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>65</td>
+                            <td>十一部变更管理平台（工程院）</td>
+                            <td>严七</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-11-08 14:30</td>
+                            <td>2024-08-11 08:45</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>66</td>
+                            <td>十一部变更管理平台（十一部零部件）</td>
+                            <td>华八</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-11-09 11:00</td>
+                            <td>2024-08-10 15:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>67</td>
+                            <td>十一部饰件采购明细管理平台</td>
+                            <td>金九</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-11-10 10:00</td>
+                            <td>2024-08-09 09:15</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>68</td>
+                            <td>数模轻量化系统</td>
+                            <td>魏十</td>
+                            <td><span style="color:#dc3545;">作废</span></td>
+                            <td>2024-11-11 15:30</td>
+                            <td>2024-08-08 11:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>69</td>
+                            <td>问题管理平台</td>
+                            <td>蒋一</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-11-12 09:00</td>
+                            <td>2024-08-07 16:20</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>70</td>
+                            <td>线束改线看板系统</td>
+                            <td>沈二</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-11-13 14:00</td>
+                            <td>2024-08-06 08:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>71</td>
+                            <td>新迪（基础院）</td>
+                            <td>韩三</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-11-14 10:30</td>
+                            <td>2024-08-05 14:45</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>72</td>
+                            <td>新迪（新技术院）</td>
+                            <td>杨四</td>
+                            <td><span style="color:#dc3545;">作废</span></td>
+                            <td>2024-11-15 11:00</td>
+                            <td>2024-08-04 10:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>73</td>
+                            <td>研发设计评审平台</td>
+                            <td>朱五</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-11-16 09:30</td>
+                            <td>2024-08-03 15:15</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>74</td>
+                            <td>用友PLM</td>
+                            <td>秦六</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-11-17 14:00</td>
+                            <td>2024-08-02 09:45</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>75</td>
+                            <td>云平台</td>
+                            <td>尤七</td>
+                            <td><span style="color:#28a745;">生效</span></td>
+                            <td>2024-11-18 10:00</td>
+                            <td>2024-08-01 11:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>76</td>
+                            <td>主数据管理平台（新技术院自研）</td>
+                            <td>许八</td>
+                            <td><span style="color:#dc3545;">作废</span></td>
+                            <td>2024-11-19 15:30</td>
+                            <td>2024-07-31 08:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="editTargetSystem(this)">编辑</button>
+                                <button class="delete-btn" onclick="deleteTargetSystem(this)">删除</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- 接口日志查看页面 -->
+        <div id="log-viewer" class="page">
+            <div class="page-header">
+                <div class="page-title">接口日志查看</div>
+            </div>
+            
+            <!-- 查询区域 - 紧凑样式 -->
+            <div class="search-compact">
+                <div class="search-item">
+                    <label>系统名称:</label>
+                    <input type="text" id="searchLogSystem" placeholder="请输入">
+                </div>
+                <div class="search-item">
+                    <label>接口名称:</label>
+                    <input type="text" id="searchLogInterface" placeholder="请输入">
+                </div>
+                <div class="search-item">
+                    <label>日志日期:</label>
+                    <input type="date" id="searchLogDate">
+                </div>
+                <div class="search-item">
+                    <label>日志级别:</label>
+                    <select id="searchLogLevel">
+                        <option value="">请选择</option>
+                        <option value="info">INFO</option>
+                        <option value="warn">WARN</option>
+                        <option value="error">ERROR</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="searchLogs()">查询</button>
+            </div>
+            
+            <!-- 标签页 -->
+            <div class="tabs-container">
+                <div class="tabs-header">
+                    <button class="tab-btn active">日志列表</button>
+                </div>
+            </div>
+            
+            <!-- 日志列表 -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">日志列表</div>
+                    <button class="btn btn-outline btn-sm" onclick="refreshLogs()">刷新</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>系统名称</th>
+                            <th>接口名称</th>
+                            <th>日志级别</th>
+                            <th>日志内容</th>
+                            <th>请求时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logTableBody">
+                        <tr>
+                            <td>1</td>
+                            <td>集团TC PLM系统</td>
+                            <td>/api/interface/getUserInfo</td>
+                            <td><span style="color:#28a745;">INFO</span></td>
+                            <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">[2024-09-22 10:00:00] 调用成功，返回用户信息...</td>
+                            <td>2024-09-22 10:00:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="viewLogDetail(1)">查看详情</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>电池事业群TC12系统</td>
+                            <td>/api/interface/syncOrder</td>
+                            <td><span style="color:#ffc107;">WARN</span></td>
+                            <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">[2024-09-22 09:30:00] 请求超时，重试次数:2...</td>
+                            <td>2024-09-22 09:30:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="viewLogDetail(2)">查看详情</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>第十四事业部TCPLM系统</td>
+                            <td>/api/interface/submitData</td>
+                            <td><span style="color:#dc3545;">ERROR</span></td>
+                            <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">[2024-09-22 09:15:00] 数据提交失败，错误码:500...</td>
+                            <td>2024-09-22 09:15:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn" onclick="viewLogDetail(3)">查看详情</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- TC系统名称维护页面 -->
+        <div id="tc-system" class="page">
+            <div class="page-header">
+                <div class="page-title">TC系统维护</div>
+                <button class="btn btn-success" onclick="openModal('tcModal')">
+                    <span>+</span> 新增TC系统
+                </button>
+            </div>
+            
+            <!-- 查询区域 - 紧凑样式 -->
+            <div class="search-compact">
+                <div class="search-item">
+                    <label>TC系统名称:</label>
+                    <input type="text" id="searchTcName" placeholder="请输入">
+                </div>
+                <div class="search-item">
+                    <label>维护人:</label>
+                    <input type="text" id="searchTcMaintainer" placeholder="请输入">
+                </div>
+                <div class="search-item">
+                    <label>状态:</label>
+                    <select id="searchTcStatus">
+                        <option value="">请选择</option>
+                        <option value="enabled">启用</option>
+                        <option value="disabled">禁用</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="searchTcSystems()">查询</button>
+            </div>
+            
+            <!-- 标签页 -->
+            <div class="tabs-container">
+                <div class="tabs-header">
+                    <button class="tab-btn active">系统列表</button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>TC系统名称</th>
+                            <th>维护人</th>
+                            <th>状态</th>
+                            <th>创建时间</th>
+                            <th>更新时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tcSystemTableBody">
+                        <tr>
+                            <td>1</td>
+                            <td>集团TC PLM系统</td>
+                            <td>管理员</td>
+                            <td><span class="status-badge status-enabled">启用</span></td>
+                            <td>2024-01-15 10:30</td>
+                            <td>2024-09-20 14:25</td>
+                            <td class="action-btns">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>电池事业群TC12系统</td>
+                            <td>管理员</td>
+                            <td><span class="status-badge status-enabled">启用</span></td>
+                            <td>2024-02-10 09:00</td>
+                            <td>2024-09-18 16:40</td>
+                            <td class="action-btns">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>第十四事业部TCPLM系统</td>
+                            <td>管理员</td>
+                            <td><span class="status-badge status-enabled">启用</span></td>
+                            <td>2024-03-05 11:20</td>
+                            <td>2024-09-22 09:15</td>
+                            <td class="action-btns">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- 事业部维护页面 -->
+        <div id="division" class="page">
+            <div class="page-header">
+                <div class="page-title">事业部管理</div>
+                <button class="btn btn-success" onclick="openModal('divisionModal')">
+                    <span>+</span> 新增事业部
+                </button>
+            </div>
+            
+            <!-- 查询区域 - 紧凑样式 -->
+            <div class="search-compact">
+                <div class="search-item">
+                    <label>事业部名称:</label>
+                    <input type="text" id="searchDivisionName" placeholder="请输入">
+                </div>
+                <div class="search-item">
+                    <label>维护人:</label>
+                    <input type="text" id="searchDivisionMaintainer" placeholder="请输入">
+                </div>
+                <div class="search-item">
+                    <label>状态:</label>
+                    <select id="searchDivisionStatus">
+                        <option value="">请选择</option>
+                        <option value="enabled">启用</option>
+                        <option value="disabled">禁用</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="searchDivisions()">查询</button>
+            </div>
+            
+            <!-- 标签页 -->
+            <div class="tabs-container">
+                <div class="tabs-header">
+                    <button class="tab-btn active">事业部列表</button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>事业部名称</th>
+                            <th>维护人</th>
+                            <th>状态</th>
+                            <th>创建时间</th>
+                            <th>更新时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="divisionTableBody">
+                        <tr>
+                            <td>1</td>
+                            <td>工程院</td>
+                            <td>管理员</td>
+                            <td><span class="status-badge status-enabled">启用</span></td>
+                            <td>2024-01-01 08:00</td>
+                            <td>2024-09-22 10:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>新技术院-TC</td>
+                            <td>管理员</td>
+                            <td><span class="status-badge status-enabled">启用</span></td>
+                            <td>2024-01-02 09:00</td>
+                            <td>2024-09-21 15:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>新技术院-AWC</td>
+                            <td>管理员</td>
+                            <td><span class="status-badge status-enabled">启用</span></td>
+                            <td>2024-01-03 10:00</td>
+                            <td>2024-09-20 11:20</td>
+                            <td class="action-btns">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>商研院</td>
+                            <td>管理员</td>
+                            <td><span class="status-badge status-enabled">启用</span></td>
+                            <td>2024-01-04 08:30</td>
+                            <td>2024-09-19 14:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>二十一部</td>
+                            <td>管理员</td>
+                            <td><span class="status-badge status-enabled">启用</span></td>
+                            <td>2024-01-05 09:00</td>
+                            <td>2024-09-18 16:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>十一部-总装</td>
+                            <td>管理员</td>
+                            <td><span class="status-badge status-enabled">启用</span></td>
+                            <td>2024-01-06 10:00</td>
+                            <td>2024-09-17 09:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td>十一部-冲压</td>
+                            <td>管理员</td>
+                            <td><span class="status-badge status-enabled">启用</span></td>
+                            <td>2024-01-07 11:00</td>
+                            <td>2024-09-16 14:20</td>
+                            <td class="action-btns">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>8</td>
+                            <td>十一部-涂装</td>
+                            <td>管理员</td>
+                            <td><span class="status-badge status-enabled">启用</span></td>
+                            <td>2024-01-08 08:00</td>
+                            <td>2024-09-15 10:40</td>
+                            <td class="action-btns">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>9</td>
+                            <td>十一部-焊装</td>
+                            <td>管理员</td>
+                            <td><span class="status-badge status-enabled">启用</span></td>
+                            <td>2024-01-09 09:00</td>
+                            <td>2024-09-14 15:50</td>
+                            <td class="action-btns">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>10</td>
+                            <td>十一部-饰件</td>
+                            <td>管理员</td>
+                            <td><span class="status-badge status-enabled">启用</span></td>
+                            <td>2024-01-10 10:00</td>
+                            <td>2024-09-13 11:10</td>
+                            <td class="action-btns">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>11</td>
+                            <td>十一部-轻量化</td>
+                            <td>管理员</td>
+                            <td><span class="status-badge status-enabled">启用</span></td>
+                            <td>2024-01-11 11:00</td>
+                            <td>2024-09-12 16:30</td>
+                            <td class="action-btns">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>12</td>
+                            <td>第二事业部</td>
+                            <td>管理员</td>
+                            <td><span class="status-badge status-enabled">启用</span></td>
+                            <td>2024-01-12 08:30</td>
+                            <td>2024-09-11 09:20</td>
+                            <td class="action-btns">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>13</td>
+                            <td>M&E工厂</td>
+                            <td>管理员</td>
+                            <td><span class="status-badge status-enabled">启用</span></td>
+                            <td>2024-01-13 09:30</td>
+                            <td>2024-09-10 14:40</td>
+                            <td class="action-btns">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>14</td>
+                            <td>第十四事业部</td>
+                            <td>管理员</td>
+                            <td><span class="status-badge status-enabled">启用</span></td>
+                            <td>2024-01-14 10:30</td>
+                            <td>2024-09-09 15:00</td>
+                            <td class="action-btns">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>15</td>
+                            <td>集团通用</td>
+                            <td>管理员</td>
+                            <td><span class="status-badge status-enabled">启用</span></td>
+                            <td>2024-01-15 11:00</td>
+                            <td>2024-09-08 10:20</td>
+                            <td class="action-btns">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- TC系统名称新增/编辑弹窗 -->
+    <div id="tcModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">新增/编辑 TC系统名称</div>
+                <button class="modal-close" onclick="closeModal('tcModal')">×</button>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="required">TC系统名称</label>
+                    <input type="text" placeholder="请输入TC系统名称">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>维护人</label>
+                    <input type="text" placeholder="请输入维护人">
+                </div>
+                <div class="form-group">
+                    <label>状态</label>
+                    <select>
+                        <option value="enabled">启用</option>
+                        <option value="disabled">禁用</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('tcModal')">取消</button>
+                <button class="btn btn-primary" onclick="closeModal('tcModal')">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 事业部新增/编辑弹窗 -->
+    <div id="divisionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">新增/编辑 事业部</div>
+                <button class="modal-close" onclick="closeModal('divisionModal')">×</button>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="required">事业部名称</label>
+                    <input type="text" placeholder="请输入事业部名称">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>维护人</label>
+                    <input type="text" placeholder="请输入维护人">
+                </div>
+                <div class="form-group">
+                    <label>状态</label>
+                    <select>
+                        <option value="enabled">启用</option>
+                        <option value="disabled">禁用</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('divisionModal')">取消</button>
+                <button class="btn btn-primary" onclick="closeModal('divisionModal')">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 新增台账弹窗 -->
+    <div id="addAccountModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="addAccountTitle">新增台账</div>
+                <button class="modal-close" onclick="closeModal('addAccountModal')">×</button>
+            </div>
+            
+            <!-- 基础信息 -->
+            <div class="form-section">
+                <div class="form-section-title">基础信息</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="required">TC系统名称</label>
+                        <select id="tcSystemSelect" style="width:100%;padding:10px;background:#f5f7fa;border:1px solid #e8ecf1;border-radius:6px;">
+                            <option value="">请选择</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="required">事业部（支持多选）</label>
+                        <select id="divisionMultiSelect" class="multi-select" multiple size="4">
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="required">集成方系统名称</label>
+                        <select id="editTargetSystem" style="width:100%;padding:10px;background:#f5f7fa;border:1px solid #e8ecf1;border-radius:6px;">
+                            <option value="">请选择</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>TC接口负责人（支持多人）</label>
+                        <input type="text" id="editTcLeader" placeholder="请输入TC接口负责人，多人以逗号分隔">
+                    </div>
+                    <div class="form-group">
+                        <label>集成方负责人(支持多人)</label>
+                        <input type="text" id="editTargetLeader" placeholder="请输入集成方负责人，多人以逗号分隔">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group wide-input">
+                        <label>集成方测试IP</label>
+                        <input type="text" id="editTestIp" placeholder="请输入测试环境IP" style="width:100%;">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group wide-input">
+                        <label>集成方生产IP</label>
+                        <input type="text" id="editProdIp" placeholder="请输入生产环境IP" style="width:100%;">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>系统集成状态</label>
+                        <select id="editSystemStatus" style="width:100%;padding:10px;background:#f5f7fa;border:1px solid #e8ecf1;border-radius:6px;">
+                            <option value="active" selected>生效</option>
+                            <option value="invalid">作废</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>关联文档</label>
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <div class="dropdown" style="position:relative;">
+                                    <button class="btn btn-outline btn-sm" onclick="toggleDocDropdown()" style="min-width:120px;">
+                                        上传文档 <span style="margin-left:5px;">▼</span>
+                                    </button>
+                                    <div id="docDropdown" class="dropdown-content" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #e8ecf1;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.1);z-index:10;min-width:140px;">
+                                        <div class="dropdown-item" onclick="uploadFromDimou('dimou')" style="padding:10px 15px;cursor:pointer;font-size:13px;">
+                                            迪墨云上传
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="file" id="docFileInput" style="display:none;" multiple onchange="handleDocFiles(this.files)">
+                            </div>
+                            <div id="uploadedDocList" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group wide-input">
+                        <label>涉及首选项</label>
+                        <input type="text" id="editPreferredDomain" placeholder="请输入首选项" style="width:100%;">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group wide-input">
+                        <label>涉及handle</label>
+                        <input type="text" id="editHandle" placeholder="请输入handle" style="width:100%;">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group wide-input">
+                        <label>备注</label>
+                        <textarea rows="3" id="editBasicRemark" placeholder="请输入备注" style="width:100%;"></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 详细信息（可多行） -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <span>详细信息</span>
+                    <button class="add-row-btn" onclick="addDetailRow()">+ 添加一行</button>
+                </div>
+                <div class="sub-table" id="detailTable" style="overflow-x:auto;">
+                    <table style="min-width:1600px;">
+                        <thead>
+                            <tr>
+                                <th style="width:100px;min-width:100px;">接口提供方</th>
+                                <th style="min-width:200px;">提供接口清单名称</th>
+                                <th style="min-width:100px;">接口集成状态</th>
+                                <th style="min-width:120px;">测试nacos服务名</th>
+                                <th style="min-width:120px;">生产nacos服务名</th>
+                                <th style="min-width:250px;">测试环境接口地址</th>
+                                <th style="min-width:250px;">生产环境接口地址</th>
+                                <th style="min-width:300px;">接口报文样例</th>
+                                <th style="min-width:150px;">测试接口日志维护</th>
+                                <th style="min-width:150px;">生产接口日志维护</th>
+                                <th style="min-width:150px;">备注</th>
+                                <th style="width:80px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailTableBody">
+                            <tr>
+                                <td>
+                                    <select style="width:100%;padding:6px;border:1px solid #e8ecf1;border-radius:4px;">
+                                        <option value="">请选择</option>
+                                        <option value="tc">TC提供</option>
+                                        <option value="non-tc">非TC提供</option>
+                                    </select>
+                                </td>
+                                <td><input type="text" placeholder="接口清单名称" class="wide-field-input"></td>
+                                <td>
+                                    <select style="width:100%;padding:6px;border:1px solid #e8ecf1;border-radius:4px;">
+                                        <option value="active" selected>生效</option>
+                                        <option value="invalid">作废</option>
+                                    </select>
+                                </td>
+                                <td><input type="text" placeholder="测试nacos服务名" class="wide-field-input"></td>
+                                <td><input type="text" placeholder="生产nacos服务名" class="wide-field-input"></td>
+                                <td><input type="text" placeholder="测试地址" class="wide-field-input"></td>
+                                <td><input type="text" placeholder="生产地址" class="wide-field-input"></td>
+                                <td><textarea rows="4" placeholder="接口报文样例" class="wide-field-textarea"></textarea></td>
+                                <td><input type="text" placeholder="测试日志路径" class="wide-field-input"></td>
+                                <td><input type="text" placeholder="生产日志路径" class="wide-field-input"></td>
+                                <td><textarea rows="3" placeholder="备注" class="wide-field-textarea"></textarea></td>
+                                <td>
+                                    <button class="detail-action-btn detail-delete-btn" onclick="removeDetailRow(this)">删除</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('addAccountModal')">取消</button>
+                <button class="btn btn-primary" onclick="closeModal('addAccountModal')">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 白名单新增/编辑弹窗 -->
+    <div id="whiteListModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">新增/编辑 白名单</div>
+                <button class="modal-close" onclick="closeModal('whiteListModal')">×</button>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="required">白名单名称</label>
+                    <input type="text" id="whiteListName" placeholder="请输入白名单名称，如：ERP系统白名单">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group wide-input">
+                    <label class="required">白名单值（支持多个，逗号分隔）</label>
+                    <textarea rows="4" id="whiteListValue" placeholder="请输入白名单值，多个值用逗号分隔，如：192.168.1.100,192.168.1.101" style="width:100%;padding:10px;background:#f5f7fa;border:1px solid #e8ecf1;border-radius:6px;resize:vertical;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('whiteListModal')">取消</button>
+                <button class="btn btn-primary" onclick="saveWhiteList()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 详细信息编辑弹窗 -->
+    <div id="detailEditModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <div class="modal-title">编辑详细信息</div>
+                <button class="modal-close" onclick="closeModal('detailEditModal')">×</button>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>接口提供方</label>
+                    <select id="editProvider">
+                        <option value="">请选择</option>
+                        <option value="tc">TC提供</option>
+                        <option value="non-tc">非TC提供</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>提供接口清单名称</label>
+                    <input type="text" id="editApiName" placeholder="请输入接口清单名称">
+                </div>
+                <div class="form-group">
+                    <label>接口集成状态</label>
+                    <select id="editApiStatus">
+                        <option value="active" selected>生效</option>
+                        <option value="invalid">作废</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>nacos配置文件名</label>
+                    <input type="text" id="editNacosConfig" placeholder="请输入nacos配置文件名">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>测试环境接口地址</label>
+                    <input type="text" id="editTestUrl" placeholder="请输入测试环境接口地址">
+                </div>
+                <div class="form-group">
+                    <label>生产环境接口地址</label>
+                    <input type="text" id="editProdUrl" placeholder="请输入生产环境接口地址">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group wide-input">
+                    <label>接口报文样例</label>
+                    <textarea rows="5" id="editSample" placeholder="请输入接口报文样例" style="width:100%;"></textarea>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>接口日志查看</label>
+                    <input type="text" id="editLogPath" placeholder="请输入日志路径">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group wide-input">
+                    <label>备注</label>
+                    <textarea rows="3" id="editDetailRemark" placeholder="请输入备注" style="width:100%;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('detailEditModal')">取消</button>
+                <button class="btn btn-primary" onclick="saveDetailEdit()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 日志详情弹窗 -->
+    <div id="logDetailModal" class="modal">
+        <div class="modal-content" style="max-width:900px;">
+            <div class="modal-header">
+                <div class="modal-title">日志详情</div>
+                <button class="modal-close" onclick="closeModal('logDetailModal')">×</button>
+            </div>
+            <div class="form-section">
+                <div class="form-section-title">基本信息</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>系统名称</label>
+                        <input type="text" id="logDetailSystem" readonly style="background:#f5f7fa;">
+                    </div>
+                    <div class="form-group">
+                        <label>接口名称</label>
+                        <input type="text" id="logDetailInterface" readonly style="background:#f5f7fa;">
+                    </div>
+                    <div class="form-group">
+                        <label>日志级别</label>
+                        <input type="text" id="logDetailLevel" readonly style="background:#f5f7fa;">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>请求时间</label>
+                        <input type="text" id="logDetailTime" readonly style="background:#f5f7fa;">
+                    </div>
+                    <div class="form-group">
+                        <label>请求耗时</label>
+                        <input type="text" id="logDetailDuration" readonly style="background:#f5f7fa;">
+                    </div>
+                </div>
+            </div>
+            <div class="form-section">
+                <div class="form-section-title">请求信息</div>
+                <div class="form-group">
+                    <label>请求参数</label>
+                    <textarea rows="4" id="logDetailRequest" readonly style="width:100%;background:#f5f7fa;border:1px solid #e8ecf1;border-radius:6px;padding:10px;font-family:monospace;font-size:12px;resize:vertical;"></textarea>
+                </div>
+            </div>
+            <div class="form-section">
+                <div class="form-section-title">响应信息</div>
+                <div class="form-group">
+                    <label>响应结果</label>
+                    <textarea rows="6" id="logDetailResponse" readonly style="width:100%;background:#f5f7fa;border:1px solid #e8ecf1;border-radius:6px;padding:10px;font-family:monospace;font-size:12px;resize:vertical;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('logDetailModal')">关闭</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentEditRow = null;
+
+        function toggleNavGroup(groupId) {
+            const group = document.getElementById(groupId);
+            const title = group.previousElementSibling;
+            group.classList.toggle('collapsed');
+            title.classList.toggle('collapsed');
+        }
+        
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            event.target.closest('.nav-item').classList.add('active');
+        }
+        
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            if (modalId === 'addAccountModal') {
+                loadDivisionOptions();
+                loadTargetSystemOptions();
+            }
+        }
+        
+        // 加载集成方系统名称下拉选项
+        function loadTargetSystemOptions() {
+            const select = document.getElementById('editTargetSystem');
+            select.innerHTML = '<option value="">请选择</option>';
+            
+            const tableBody = document.getElementById('targetSystemTableBody');
+            if (tableBody) {
+                const rows = tableBody.getElementsByTagName('tr');
+                for (let i = 0; i < rows.length; i++) {
+                    const cells = rows[i].cells;
+                    if (cells.length > 1) {
+                        const systemName = cells[1].textContent.trim();
+                        const option = document.createElement('option');
+                        option.value = systemName;
+                        option.textContent = systemName;
+                        select.appendChild(option);
+                    }
+                }
+            }
+        }
+        
+        function viewDoc() {
+            alert('查看关联文档');
+        }
+        
+        function showWhiteListMaintain() {
+            showPage('white-list');
+        }
+        
+        function showLogPage(env) {
+            // 跳转到日志查看页面
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.getElementById('log-viewer').classList.add('active');
+            // 找到日志查看的导航项并设置高亮
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                if (item.getAttribute('onclick').includes("'log-viewer'")) {
+                    item.classList.add('active');
+                }
+            });
+            // 清空日志路径搜索框
+            document.getElementById('searchLogInterface').value = '';
+        }
+        
+        function showNacosConfig(env) {
+            alert('查看' + (env === 'prod' ? '生产' : '测试') + 'Nacos服务名配置');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) this.classList.remove('active');
+            });
+        });
+        
+        function searchAccounts() {
+            alert('执行查询功能');
+        }
+        
+        // 展开/收起详细信息行
+        function toggleDetail(row) {
+            const mainRow = row;
+            const detailRow = mainRow.nextElementSibling;
+            
+            if (mainRow.classList.contains('expanded')) {
+                mainRow.classList.remove('expanded');
+                detailRow.classList.remove('expanded');
+            } else {
+                mainRow.classList.add('expanded');
+                detailRow.classList.remove('expanded'); // 默认收起
+            }
+        }
+        
+        // 编辑台账
+        function editAccount(btn) {
+            const row = btn.closest('tr');
+            const cells = row.cells;
+            
+            // 找到主行（带rowspan的第一行）
+            let mainRow = row;
+            while (mainRow.previousElementSibling && mainRow.previousElementSibling.cells.length > 0) {
+                const prevRow = mainRow.previousElementSibling;
+                // 检查上一行是否有rowspan，如果有则继续向上找
+                if (prevRow.cells[0].hasAttribute('rowspan')) {
+                    mainRow = prevRow;
+                } else {
+                    break;
+                }
+            }
+            
+            const mainCells = mainRow.cells;
+            
+            // 填充基础信息
+            document.getElementById('editTargetSystem').value = mainCells[3].textContent.trim(); // 集成方系统名称
+            document.getElementById('editTcLeader').value = mainCells[6].textContent.trim(); // TC负责人
+            document.getElementById('editTargetLeader').value = mainCells[7].textContent.trim(); // 集成方负责人
+            document.getElementById('editTestIp').value = mainCells[8].textContent.trim(); // 集成方测试IP
+            document.getElementById('editProdIp').value = mainCells[9].textContent.trim(); // 集成方生产IP
+            document.getElementById('editPreferredDomain').value = mainCells[11].textContent.trim(); // 首选项
+            document.getElementById('editHandle').value = mainCells[12].textContent.trim(); // handle
+            document.getElementById('editBasicRemark').value = mainCells[13].textContent.trim(); // 备注
+            
+            // 修改弹窗标题
+            document.getElementById('addAccountTitle').textContent = '编辑台账';
+            
+            // 打开弹窗
+            openModal('addAccountModal');
+        }
+        
+        // 显示居中提示框
+        function showAlert(message, icon = '⚠️') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'custom-alert';
+            alertDiv.innerHTML = `
+                <div class="custom-alert-content">
+                    <div class="custom-alert-icon">${icon}</div>
+                    <div class="custom-alert-message">${message}</div>
+                    <button class="custom-alert-btn" onclick="this.closest('.custom-alert').remove()">确定</button>
+                </div>
+            `;
+            document.body.appendChild(alertDiv);
+        }
+
+        // 删除台账
+        function deleteAccount(btn) {
+            const row = btn.closest('tr');
+            // 检查是否有子行（有rowspan>1表示存在明细行）
+            const cellsWithRowspan = row.querySelectorAll('td[rowspan]');
+            if (cellsWithRowspan.length > 0) {
+                const maxRowspan = parseInt(cellsWithRowspan[0].getAttribute('rowspan'));
+                if (maxRowspan > 1) {
+                    showAlert('该系统存在集成接口详细信息，请先删除接口的信息后在执行系统集成行的删除！', '⚠️');
+                    return;
+                }
+            }
+            if (confirm('确定要删除这条台账记录吗？')) {
+                row.remove();
+            }
+        }
+        
+        function searchTcSystems() {
+            alert('查询TC系统');
+        }
+        
+        function searchDivisions() {
+            alert('查询事业部');
+        }
+        
+        function addDetailRow() {
+            const tbody = document.getElementById('detailTableBody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = '<td><select style="width:100%;padding:6px;border:1px solid #e8ecf1;border-radius:4px;"><option value="">请选择</option><option value="tc">TC提供</option><option value="non-tc">非TC提供</option></select></td>' +
+                '<td><input type="text" placeholder="接口清单名称" class="wide-field-input"></td>' +
+                '<td><input type="text" placeholder="测试nacos服务名" class="wide-field-input"></td>' +
+                '<td><input type="text" placeholder="生产nacos服务名" class="wide-field-input"></td>' +
+                '<td><input type="text" placeholder="测试地址" class="wide-field-input"></td>' +
+                '<td><input type="text" placeholder="生产地址" class="wide-field-input"></td>' +
+                '<td><textarea rows="4" placeholder="接口报文样例" class="wide-field-textarea"></textarea></td>' +
+                '<td><input type="text" placeholder="测试日志路径" class="wide-field-input"></td>' +
+                '<td><input type="text" placeholder="生产日志路径" class="wide-field-input"></td>' +
+                '<td><textarea rows="3" placeholder="备注" class="wide-field-textarea"></textarea></td>' +
+                '<td><button class="detail-action-btn detail-delete-btn" onclick="removeDetailRow(this)">删除</button></td>';
+            tbody.appendChild(tr);
+        }
+        
+        function removeDetailRow(btn) {
+            const tr = btn.closest('tr');
+            const tbody = document.getElementById('detailTableBody');
+            if (tbody.children.length > 1) {
+                tr.remove();
+            } else {
+                alert('至少保留一行');
+            }
+        }
+
+        // 导出台账
+        function exportAccount() {
+            // 获取台账数据
+            const tableBody = document.getElementById('accountTableBody');
+            if (!tableBody || tableBody.rows.length === 0) {
+                alert('没有可导出的数据');
+                return;
+            }
+
+            // 构建CSV内容
+            const headers = ['序号', 'TC系统名称', '事业部', '集成方系统名称', '生产环境白名单', '测试环境白名单',
+                           'TC负责人', '集成方负责人', '集成方测试IP', '集成方生产IP', '系统集成状态',
+                           '首选项', 'handle', '基本信息备注', '关联文档', '接口提供方', '接口清单名称',
+                           '接口集成状态', '生产nacos服务名', '测试nacos服务名', '测试环境接口地址',
+                           '生产环境接口地址', '接口报文样例', '生产接口日志查看', '测试接口日志查看',
+                           '详细信息备注', '维护人', '创建日期', '更新日期'];
+
+            let csvContent = headers.join(',') + '\n';
+
+            // 遍历每一行基本数据
+            const rows = tableBody.querySelectorAll('tr');
+            rows.forEach((row, rowIndex) => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length > 0) {
+                    // 获取每行的文本内容
+                    const rowData = [];
+                    cells.forEach(cell => {
+                        let text = cell.textContent.trim().replace(/"/g, '""');
+                        rowData.push('"' + text + '"');
+                    });
+                    csvContent += rowData.join(',') + '\n';
+                }
+            });
+
+            // 创建Blob并触发下载
+            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+
+            // 创建下载链接
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = '系统集成台账_' + new Date().toLocaleDateString('zh-CN').replace(/\//g, '-') + '.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            alert('台账已导出');
+        }
+
+        // 跳转到日志查看界面
+        function jumpToLog(input) {
+            const logPath = input.value.trim();
+            if (logPath) {
+                // 实际项目中这里可以打开新窗口或刷新页面跳转到日志查看界面
+                // 例如：window.open('/logviewer?path=' + encodeURIComponent(logPath), '_blank');
+                alert('跳转到日志查看界面: ' + logPath);
+            }
+        }
+        
+        // 按更新时间倒序排列表格
+        function sortTableByUpdateTime(tableId, updateTimeColIndex) {
+            const table = document.getElementById(tableId);
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            rows.sort(function(a, b) {
+                const aTime = a.cells[updateTimeColIndex].textContent.trim();
+                const bTime = b.cells[updateTimeColIndex].textContent.trim();
+                // 降序排列（最新的在前）
+                return bTime.localeCompare(aTime);
+            });
+            
+            rows.forEach(row => tbody.appendChild(row));
+        }
+        
+        // 页面加载时自动排序
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDropdownOptions();
+            // 初始化时按更新时间倒序排列
+            sortTableByUpdateTime('tcSystemTableBody', 5); // TC系统名称维护表，更新时间在第6列（索引5）
+            sortTableByUpdateTime('divisionTableBody', 5); // 事业部维护表，更新时间在第6列（索引5）
+            sortTableByUpdateTime('targetSystemTableBody', 5); // 集成系统名称表，更新时间在第6列（索引5）
+        });
+        
+        // 排序按钮点击事件
+        function sortTcSystemByTime() {
+            sortTableByUpdateTime('tcSystemTableBody', 5);
+        }
+        
+        function sortDivisionByTime() {
+            sortTableByUpdateTime('divisionTableBody', 5);
+        }
+        
+        function sortTargetSystemByTime() {
+            sortTableByUpdateTime('targetSystemTableBody', 5);
+        }
+        
+        // 白名单相关函数
+        function openWhiteListModal() {
+            openModal('whiteListModal');
+        }
+        
+        function saveWhiteList() {
+            const name = document.getElementById('whiteListName').value.trim();
+            const value = document.getElementById('whiteListValue').value.trim();
+            if (!name || !value) {
+                alert('请填写完整信息');
+                return;
+            }
+            // 保存逻辑
+            alert('白名单保存成功');
+            closeModal('whiteListModal');
+        }
+        
+        function searchWhiteList() {
+            alert('查询白名单');
+        }
+        
+        function searchTargetSystem() {
+            const name = document.getElementById('searchTargetSystemName').value.trim();
+            const owner = document.getElementById('searchTargetSystemOwner').value.trim();
+            const status = document.getElementById('searchTargetSystemStatus').value;
+            alert('查询对接系统: 名称=' + name + ', 维护人=' + owner + ', 状态=' + status);
+        }
+        
+        function editTargetSystem(btn) {
+            const row = btn.closest('tr');
+            const cells = row.cells;
+            alert('编辑对接系统: ' + cells[1].textContent);
+        }
+        
+        function deleteTargetSystem(btn) {
+            if (confirm('确定要删除这条对接系统记录吗？')) {
+                const row = btn.closest('tr');
+                row.remove();
+            }
+        }
+        
+        function selectWhiteList(name, value) {
+            document.getElementById('whiteListInput').value = name + '：' + value;
+            closeModal('whiteListSelectModal');
+        }
+        
+        // 接口日志查看相关函数
+        function searchLogs() {
+            alert('查询日志');
+        }
+        
+        function refreshLogs() {
+            alert('刷新日志');
+        }
+        
+        function viewLogDetail(logId) {
+            // 模拟加载日志详情
+            document.getElementById('logDetailSystem').value = '集团TC PLM系统';
+            document.getElementById('logDetailInterface').value = '/api/interface/getUserInfo';
+            document.getElementById('logDetailLevel').value = 'INFO';
+            document.getElementById('logDetailTime').value = '2024-09-22 10:00:00';
+            document.getElementById('logDetailDuration').value = '125ms';
+            document.getElementById('logDetailRequest').value = '{\n  "userId": "1001",\n  "token": "abc123...",\n  "timestamp": "2024-09-22 10:00:00"\n}';
+            document.getElementById('logDetailResponse').value = '{\n  "code": "0",\n  "message": "success",\n  "data": {\n    "userName": "张三",\n    "department": "工程院",\n    "position": "工程师"\n  }\n}';
+            openModal('logDetailModal');
+        }
+        
+        // 关联文档下拉菜单
+        function toggleDocDropdown() {
+            const dropdown = document.getElementById('docDropdown');
+            if (dropdown.style.display === 'none') {
+                dropdown.style.display = 'block';
+            } else {
+                dropdown.style.display = 'none';
+            }
+        }
+        
+        // 点击其他地方关闭下拉菜单
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.dropdown')) {
+                const dropdowns = document.querySelectorAll('.dropdown-content');
+                dropdowns.forEach(function(d) {
+                    d.style.display = 'none';
+                });
+            }
+        });
+        
+        // 存储已上传的文件
+        let uploadedFiles = [];
+        
+        // 处理选择的文件
+        function handleDocFiles(files) {
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                // 检查是否已存在
+                const exists = uploadedFiles.some(f => f.name === file.name);
+                if (!exists) {
+                    uploadedFiles.push(file);
+                }
+            }
+            renderUploadedDocs();
+        }
+        
+        // 渲染已上传文件列表
+        function renderUploadedDocs() {
+            const container = document.getElementById('uploadedDocList');
+            container.innerHTML = '';
+            uploadedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.style.cssText = 'display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:#e8f4fd;border:1px solid #cce5f6;border-radius:4px;font-size:12px;';
+                fileItem.innerHTML = '<span style="color:#3d7ab5;">' + file.name + '</span><span onclick="removeDoc(' + index + ')" style="cursor:pointer;color:#999;font-size:14px;line-height:1;">×</span>';
+                container.appendChild(fileItem);
+            });
+        }
+        
+        // 删除已上传的文件
+        function removeDoc(index) {
+            uploadedFiles.splice(index, 1);
+            renderUploadedDocs();
+        }
+        
+        // 从迪墨云或本地上传
+        function uploadFromDimou(type) {
+            const dropdown = document.getElementById('docDropdown');
+            dropdown.style.display = 'none';
+            
+            if (type === 'dimou') {
+                // 迪墨云上传 - 模拟打开迪墨云上传界面
+                alert('即将打开迪墨云上传界面，请选择要上传的文档');
+                // 实际项目中这里会打开迪墨云的上传组件或页面
+            } else if (type === 'local') {
+                // 本地上传 - 触发文件选择
+                document.getElementById('docFileInput').click();
+            }
+        }
+        
+        // 从新增台账弹框跳转到日志查看
+        function jumpToLogFromForm(input) {
+            const logPath = input.value.trim();
+            if (logPath) {
+                // 先关闭新增台账弹窗
+                closeModal('addAccountModal');
+                // 延迟一下再切换页面，让弹窗关闭动画完成
+                setTimeout(function() {
+                    // 跳转到日志查看页面
+                    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+                    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                    document.getElementById('log-viewer').classList.add('active');
+                    // 找到日志查看的导航项并设置高亮
+                    const navItems = document.querySelectorAll('.nav-item');
+                    navItems.forEach(item => {
+                        if (item.getAttribute('onclick').includes("'log-viewer'")) {
+                            item.classList.add('active');
+                        }
+                    });
+                    // 将日志路径填入日志查看页面的搜索框
+                    document.getElementById('searchLogInterface').value = logPath;
+                }, 100);
+            } else {
+                alert('请先配置接口日志路径');
+            }
+        }
+        
+        function editDetailRow() {
+            const tbody = document.getElementById('detailTableBody');
+            const selectedRow = tbody.querySelector('tr:hover') || tbody.children[0];
+            if (selectedRow) {
+                editThisRowFromRow(selectedRow);
+            }
+        }
+        
+        // 编辑当前点击的行
+        function editThisRow(btn) {
+            const currentRow = btn.closest('tr');
+            editThisRowFromRow(currentRow);
+        }
+        
+        // 根据行数据填充编辑弹窗
+        function editThisRowFromRow(row) {
+            currentEditRow = row;
+            const cells = row.querySelectorAll('td');
+            document.getElementById('editProvider').value = cells[0].querySelector('select').value;
+            document.getElementById('editApiName').value = cells[1].querySelector('input').value;
+            document.getElementById('editTestUrl').value = cells[2].querySelector('input').value;
+            document.getElementById('editProdUrl').value = cells[3].querySelector('input').value;
+            document.getElementById('editSample').value = cells[4].querySelector('textarea').value;
+            // 接口日志查看在cells[5]中是一个div包含input
+            const logPathInput = cells[5].querySelector('.log-path-input');
+            document.getElementById('editLogPath').value = logPathInput ? logPathInput.value : '';
+            // 备注在cells[6]中
+            document.getElementById('editDetailRemark').value = cells[6].querySelector('textarea').value;
+            openModal('detailEditModal');
+        }
+        
+        function saveDetailEdit() {
+            if (currentEditRow) {
+                const cells = currentEditRow.querySelectorAll('td');
+                cells[0].querySelector('select').value = document.getElementById('editProvider').value;
+                cells[1].querySelector('input').value = document.getElementById('editApiName').value;
+                cells[2].querySelector('input').value = document.getElementById('editTestUrl').value;
+                cells[3].querySelector('input').value = document.getElementById('editProdUrl').value;
+                cells[4].querySelector('textarea').value = document.getElementById('editSample').value;
+                // 接口日志查看在cells[5]中是一个div包含input
+                const logPathInput = cells[5].querySelector('.log-path-input');
+                if (logPathInput) logPathInput.value = document.getElementById('editLogPath').value;
+                // 备注在cells[6]中
+                cells[6].querySelector('textarea').value = document.getElementById('editDetailRemark').value;
+            }
+            closeModal('detailEditModal');
+        }
+        
+        // 动态加载下拉选项
+        function loadDropdownOptions() {
+            // 从TC系统名称维护表格加载TC系统名称下拉选项
+            const tcTableBody = document.querySelector('#tc-system tbody');
+            const searchTcSystem = document.getElementById('searchTcSystem');
+            if (tcTableBody && searchTcSystem) {
+                const rows = tcTableBody.querySelectorAll('tr');
+                rows.forEach(row => {
+                    const tcName = row.cells[1].textContent;
+                    if (tcName) {
+                        const option = document.createElement('option');
+                        option.value = tcName;
+                        option.textContent = tcName;
+                        searchTcSystem.appendChild(option);
+                    }
+                });
+            }
+            
+            // 从事业部维护表格加载事业部下拉选项
+            const divisionTableBody = document.querySelector('#division tbody');
+            const searchDivision = document.getElementById('searchDivision');
+            if (divisionTableBody && searchDivision) {
+                const rows = divisionTableBody.querySelectorAll('tr');
+                rows.forEach(row => {
+                    const divisionName = row.cells[1].textContent;
+                    if (divisionName) {
+                        const option = document.createElement('option');
+                        option.value = divisionName;
+                        option.textContent = divisionName;
+                        searchDivision.appendChild(option);
+                    }
+                });
+            }
+        }
+        
+        function loadDivisionOptions() {
+            const divisionMultiSelect = document.getElementById('divisionMultiSelect');
+            if (divisionMultiSelect) {
+                divisionMultiSelect.innerHTML = '';
+                const divisionTableBody = document.querySelector('#division tbody');
+                if (divisionTableBody) {
+                    const rows = divisionTableBody.querySelectorAll('tr');
+                    rows.forEach(row => {
+                        const divisionName = row.cells[1].textContent;
+                        if (divisionName) {
+                            const option = document.createElement('option');
+                            option.value = divisionName;
+                            option.textContent = divisionName;
+                            divisionMultiSelect.appendChild(option);
+                        }
+                    });
+                }
+            }
+            
+            // 同时加载TC系统名称下拉框
+            const tcSystemSelect = document.getElementById('tcSystemSelect');
+            if (tcSystemSelect) {
+                tcSystemSelect.innerHTML = '<option value="">请选择</option>';
+                const tcTableBody = document.querySelector('#tc-system tbody');
+                if (tcTableBody) {
+                    const rows = tcTableBody.querySelectorAll('tr');
+                    rows.forEach(row => {
+                        const tcName = row.cells[1].textContent;
+                        if (tcName) {
+                            const option = document.createElement('option');
+                            option.value = tcName;
+                            option.textContent = tcName;
+                            tcSystemSelect.appendChild(option);
+                        }
+                    });
+                }
+            }
+        }
+        
+        // 日志路径点击跳转
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('log-path-input') && e.target.value) {
+                jumpToLog(e.target);
+            }
+        });
+    </script>
+</body>
+</html>
